@@ -15,6 +15,9 @@
       "auth": {
         "tradingjournal9c729526": {},
         "tradingjournal718eb0e3": {}
+      },
+      "api": {
+        "tradingjournal": {}
       }
     }
   }
