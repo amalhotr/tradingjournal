@@ -5,17 +5,21 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 import { TradingViewWidget } from "./components/TVChart"
 import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
 import { API } from "aws-amplify";
+import logo from "./logo.svg";
+import "@aws-amplify/ui-react/styles.css";
 import {
-  Button,
-  Flex,
-  Heading,
-  Text,
-  TextField,
-  View,
   withAuthenticator,
+  Button,
+  Heading,
+  Image,
+  View,
+  Card,
 } from "@aws-amplify/ui-react";
 import { listNotes, listTrades } from "./graphql/queries";
 import {
@@ -24,6 +28,13 @@ import {
   createTrade as createTradeMutation
 } from "./graphql/mutations";
 
+const Item = styled(Paper)(({ theme }) => ({
+  ...theme.typography.body2,
+  textAlign: 'center',
+  color: theme.palette.text.secondary,
+  height: 60,
+  lineHeight: '60px',
+}));
 
 const options = [
   { id: 1, name: 'Option 1', content: 'Content for Option 1' },
@@ -37,6 +48,8 @@ const App = ({ signOut }) => {
 
   const [selectedTrade, setSelectedTrade] = useState([])
   const [selectedOption, setSelectedOption] = useState(options[0])
+  const [selectedEnter, setSelectedEnter] = useState('');
+  const [selectedExit, setSelectedExit] = useState('')
 
   const [newTradeTicker, setNewTradeTicker] = useState('');
   const [newTradeType, setNewTradeType] = useState('');
@@ -51,10 +64,12 @@ const App = ({ signOut }) => {
 
   const handleOptionClick = (option) => {
     setSelectedOption(option);
+    console.log(trades);
   };
 
   const handleTradeClick = (trade) => {
-    setTrades(trade);
+    setSelectedTrade(trade);
+    console.log(selectedTrade)
   };
 
   const handleNewOptionSubmit = (event) => {
@@ -102,7 +117,6 @@ const App = ({ signOut }) => {
   useEffect(() => {
     fetchNotes();
     fetchTrades();
-    console.log(trades)
   }, []);
 
   async function fetchNotes() {
@@ -114,10 +128,8 @@ const App = ({ signOut }) => {
   async function fetchTrades() {
     const apiData = await API.graphql({ query: listTrades });
     const tradesFromAPI = apiData.data.listTrades.items;
-    console.log(tradesFromAPI)
     setTrades(tradesFromAPI);
-    console.log("Trades Below: ")
-    console.log(trades)
+
   }
 
   async function createTrade(event, newTrade) {
@@ -129,6 +141,20 @@ const App = ({ signOut }) => {
     });
     fetchTrades();
     event.target.reset();
+  }
+
+  function formatDate(dateString){
+    if (dateString == undefined){
+      return ''
+    }
+    const month = parseInt(dateString.substring(0, 2)) - 1; // Month is zero-based (0-11)
+    const day = parseInt(dateString.substring(2, 4));
+    const year = parseInt(dateString.substring(4, 8));
+    const hour = parseInt(dateString.substring(9, 11));
+    const minute = parseInt(dateString.substring(12, 14));
+    const second = parseInt(dateString.substring(15, 17));
+
+    return new Date(year, month, day, hour, minute, second).toLocaleString('en-US', { hour12: false });
   }
 
   async function createNote(event) {
@@ -159,6 +185,9 @@ const App = ({ signOut }) => {
   return (
     <View className="App" style={{height:'100%'}}>
       <Heading level={1}>Trading Journal</Heading>
+      <br></br>
+      <Button onClick={signOut}>Sign Out</Button>
+
       <Grid container spacing={2} style={{height:'95%'}}>
         <Grid xs={2} style={{height:'90%'}}>
           <div className="scrollable-container">
@@ -180,13 +209,13 @@ const App = ({ signOut }) => {
               <ListItemButton  onClick={() => setShowPopup(true)}>
               Add New Trade
               </ListItemButton>
-              {options.map((option) => (
+              {trades.map((trade) => (
                 <ListItemButton
-                  key={option.id}
-                  className={option === selectedOption ? 'selected' : ''}
-                  onClick={() => handleOptionClick(option)}
+                  key={trade.id}
+                  className={trade === selectedTrade ? 'selected' : ''}
+                  onClick={() => handleTradeClick(trade)}
                 >
-                  <ListItemText primary={option.name} secondary="this is secondary"/>
+                  <ListItemText primary={trade.type + " - " + trade.ticker} secondary={formatDate(trade.exitTime)}/>
                 </ListItemButton>
               ))}
             </List>
@@ -195,17 +224,73 @@ const App = ({ signOut }) => {
         </Grid> 
         <Grid xs={10} style={{height:'90%'}}>
           <div style={{height:'75%'}}>
-            <TradingViewWidget />
+            <TradingViewWidget data={selectedTrade.ticker}/>
           </div>
           <div style={{height:'20%'}}>
-            <h3>This is the metadata</h3>
-            <h3>This is the metadata</h3>
-            <h3>This is the metadata</h3>
-            <h3>This is the metadata</h3>
-            <h3>This is the metadata</h3>
-            <h3>This is the metadata</h3>
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignitems: 'center',
+              justifycontent: 'center',
+              '& > :not(style)': {
+                m: 1,
+                width: '49%',
+                height: '30%',
+              },
+            }}
+          >
+            <Item elevation={12}>
+            <h2>Ticker: {selectedTrade.ticker}</h2>
+            </Item>
+            <Item elevation={12}>
+            <h2>Transaction Type: {selectedTrade.type}</h2>
+            </Item>
+
+          </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+
+              '& > :not(style)': {
+                m: 1,
+                width: '32%',
+                height: '30%',
+              },
+            }}
+          >
+            <Item elevation={12}>
+            <h2>PnL: ${selectedTrade.pnl}</h2>
+            </Item>
+            <Item elevation={12}>
+            <h2>Enter Time: {formatDate(selectedTrade.enterTime)}</h2>
+            </Item>
+            <Item elevation={12}>
+            <h2>Exit Time: {formatDate(selectedTrade.exitTime)}</h2>
+            </Item>
+          </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignitems: 'center',
+              justifycontent: 'center',
+              '& > :not(style)': {
+                m: 1,
+                width: '100%',
+                height: '30%',
+              },
+            }}
+          >
+            <Item elevation={12}>
+            <textarea></textarea>
+            </Item>
+
+
+          </Box>
           </div>
-          
+
         </Grid> 
       </Grid>
 
