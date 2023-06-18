@@ -1,5 +1,16 @@
-type Note @model @auth(rules: [ { allow: public } ] ){
+type Note @model @auth(rules: [{allow: public}]) {
   id: ID!
   name: String!
   description: String
 }
+
+type Trade @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  ticker: String!
+  type: String!
+  enterTime: String!
+  exitTime: String!
+  notes: String!
+  pnl: Float
+}
+ 

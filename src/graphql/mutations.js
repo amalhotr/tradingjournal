@@ -46,3 +46,60 @@ export const deleteNote = /* GraphQL */ `
     }
   }
 `;
+export const createTrade = /* GraphQL */ `
+  mutation CreateTrade(
+    $input: CreateTradeInput!
+    $condition: ModelTradeConditionInput
+  ) {
+    createTrade(input: $input, condition: $condition) {
+      id
+      ticker
+      type
+      enterTime
+      exitTime
+      notes
+      pnl
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const updateTrade = /* GraphQL */ `
+  mutation UpdateTrade(
+    $input: UpdateTradeInput!
+    $condition: ModelTradeConditionInput
+  ) {
+    updateTrade(input: $input, condition: $condition) {
+      id
+      ticker
+      type
+      enterTime
+      exitTime
+      notes
+      pnl
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const deleteTrade = /* GraphQL */ `
+  mutation DeleteTrade(
+    $input: DeleteTradeInput!
+    $condition: ModelTradeConditionInput
+  ) {
+    deleteTrade(input: $input, condition: $condition) {
+      id
+      ticker
+      type
+      enterTime
+      exitTime
+      notes
+      pnl
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;

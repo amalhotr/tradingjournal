@@ -37,3 +37,54 @@ export const onDeleteNote = /* GraphQL */ `
     }
   }
 `;
+export const onCreateTrade = /* GraphQL */ `
+  subscription OnCreateTrade($filter: ModelSubscriptionTradeFilterInput) {
+    onCreateTrade(filter: $filter) {
+      id
+      tradeId
+      ticker
+      type
+      enterTime
+      exitTime
+      notes
+      pnl
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onUpdateTrade = /* GraphQL */ `
+  subscription OnUpdateTrade($filter: ModelSubscriptionTradeFilterInput) {
+    onUpdateTrade(filter: $filter) {
+      id
+      tradeId
+      ticker
+      type
+      enterTime
+      exitTime
+      notes
+      pnl
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onDeleteTrade = /* GraphQL */ `
+  subscription OnDeleteTrade($filter: ModelSubscriptionTradeFilterInput) {
+    onDeleteTrade(filter: $filter) {
+      id
+      tradeId
+      ticker
+      type
+      enterTime
+      exitTime
+      notes
+      pnl
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;

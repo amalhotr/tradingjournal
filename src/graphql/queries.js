@@ -33,3 +33,43 @@ export const listNotes = /* GraphQL */ `
     }
   }
 `;
+export const getTrade = /* GraphQL */ `
+  query GetTrade($id: ID!) {
+    getTrade(id: $id) {
+      id
+      ticker
+      type
+      enterTime
+      exitTime
+      notes
+      pnl
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const listTrades = /* GraphQL */ `
+  query ListTrades(
+    $filter: ModelTradeFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listTrades(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        ticker
+        type
+        enterTime
+        exitTime
+        notes
+        pnl
+        createdAt
+        updatedAt
+        __typename
+      }
+      nextToken
+      __typename
+    }
+  }
+`;

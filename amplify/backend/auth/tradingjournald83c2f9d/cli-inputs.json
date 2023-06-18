@@ -1,10 +1,10 @@
 {
   "version": "1",
   "cognitoConfig": {
-    "identityPoolName": "tradingjournal718eb0e3_identitypool_718eb0e3",
+    "identityPoolName": "tradingjournald83c2f9d_identitypool_d83c2f9d",
     "allowUnauthenticatedIdentities": false,
-    "resourceNameTruncated": "tradin718eb0e3",
-    "userPoolName": "tradingjournal718eb0e3_userpool_718eb0e3",
+    "resourceNameTruncated": "tradind83c2f9d",
+    "userPoolName": "tradingjournald83c2f9d_userpool_d83c2f9d",
     "autoVerifiedAttributes": [
       "email"
     ],
@@ -31,10 +31,10 @@
     "userpoolClientReadAttributes": [
       "email"
     ],
-    "userpoolClientLambdaRole": "tradin718eb0e3_userpoolclient_lambda_role",
+    "userpoolClientLambdaRole": "tradind83c2f9d_userpoolclient_lambda_role",
     "userpoolClientSetAttributes": false,
-    "sharedId": "718eb0e3",
-    "resourceName": "tradingjournal718eb0e3",
+    "sharedId": "d83c2f9d",
+    "resourceName": "tradingjournald83c2f9d",
     "authSelections": "identityPoolAndUserPool",
     "useDefault": "default",
     "userPoolGroupList": [],

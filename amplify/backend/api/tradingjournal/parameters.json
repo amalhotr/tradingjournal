@@ -1,5 +1,6 @@
 {
   "AppSyncApiName": "tradingjournal",
   "DynamoDBBillingMode": "PAY_PER_REQUEST",
-  "DynamoDBEnableServerSideEncryption": false
+  "DynamoDBEnableServerSideEncryption": false,
+  "AuthModeLastUpdated": "2023-06-17T19:37:47.270Z"
 }
