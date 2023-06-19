@@ -5,10 +5,9 @@ let tvScriptLoadingPromise;
 export function TradingViewWidget(props) {
   const onLoadScriptRef = useRef();
   const { data } = props;
-  console.log(data);
-  // console.log(props{data});
   useEffect(
     () => {
+      // const { data } = props;
       onLoadScriptRef.current = createWidget;
 
       if (!tvScriptLoadingPromise) {
@@ -28,19 +27,22 @@ export function TradingViewWidget(props) {
       return () => onLoadScriptRef.current = null;
 
       function createWidget() {
-        if (document.getElementById('tradingview_b9dc5') && 'TradingView' in window) {
+        if (document.getElementById('tradingview_5c450') && 'TradingView' in window) {
           new window.TradingView.widget({
             autosize: true,
             symbol: data,
-            interval: "D",
             timezone: "Etc/UTC",
-            theme: "dark",
+            theme: "light",
             style: "1",
             locale: "en",
             toolbar_bg: "#f1f3f6",
             enable_publishing: false,
+            withdateranges: true,
+            range: "1M",
+            hide_side_toolbar: false,
             allow_symbol_change: true,
-            container_id: "tradingview_b9dc5"
+            studies: ["STD;SMA","STD;RSI"],
+            container_id: "tradingview_5c450"
           });
         }
       }
@@ -50,7 +52,7 @@ export function TradingViewWidget(props) {
 
   return (
     <div className='tradingview-widget-container' style={{height:'100%'}}>
-      <div id='tradingview_b9dc5' style={{height:'100%'}}/>
+      <div id='tradingview_5c450' style={{height:'100%'}}/>
       
     </div>
   );

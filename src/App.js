@@ -7,15 +7,24 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 import { TradingViewWidget } from "./components/TVChart"
 import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
 import { API } from "aws-amplify";
 import logo from "./logo.svg";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import "@aws-amplify/ui-react/styles.css";
 import {
   withAuthenticator,
-  Button,
+
   Heading,
   Image,
   View,
@@ -25,7 +34,9 @@ import { listNotes, listTrades } from "./graphql/queries";
 import {
   createNote as createNoteMutation,
   deleteNote as deleteNoteMutation,
-  createTrade as createTradeMutation
+  createTrade as createTradeMutation,
+  updateTrade as updateTradeMutation,
+  deleteTrade as deleteTradeMutation
 } from "./graphql/mutations";
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -48,9 +59,10 @@ const App = ({ signOut }) => {
 
   const [selectedTrade, setSelectedTrade] = useState([])
   const [selectedOption, setSelectedOption] = useState(options[0])
+  const [selectedNotes, setSelectedNotes] = useState('');
   const [selectedEnter, setSelectedEnter] = useState('');
   const [selectedExit, setSelectedExit] = useState('')
-
+  const [count, setCount] = useState(0)
   const [newTradeTicker, setNewTradeTicker] = useState('');
   const [newTradeType, setNewTradeType] = useState('');
   const [newTradeEnterTime, setNewTradeEnterTime] = useState('');
@@ -64,12 +76,14 @@ const App = ({ signOut }) => {
 
   const handleOptionClick = (option) => {
     setSelectedOption(option);
-    console.log(trades);
+
   };
 
   const handleTradeClick = (trade) => {
     setSelectedTrade(trade);
-    console.log(selectedTrade)
+
+    setSelectedNotes(trade.notes);
+    setCount(count+1)
   };
 
   const handleNewOptionSubmit = (event) => {
@@ -157,6 +171,15 @@ const App = ({ signOut }) => {
     return new Date(year, month, day, hour, minute, second).toLocaleString('en-US', { hour12: false });
   }
 
+  function formatPnl(origPnl){
+
+    if (origPnl > 0){
+      return  "$"+ origPnl
+    }else{
+
+      return "-$"+ Math.abs(origPnl)
+    }
+  }
   async function createNote(event) {
     event.preventDefault();
     const form = new FormData(event.target);
@@ -171,7 +194,11 @@ const App = ({ signOut }) => {
     fetchNotes();
     event.target.reset();
   }
+  async function deleteThisTrade (event){
+    const id = selectedTrade.id
 
+    deleteTrade(id)
+  }
   async function deleteNote({ id }) {
     const newNotes = notes.filter((note) => note.id !== id);
     setNotes(newNotes);
@@ -181,13 +208,130 @@ const App = ({ signOut }) => {
     });
   }
 
+  async function deleteTrade({ id }) {
+    const newTrades = notes.filter((trade) => trade.id !== id);
+    setTrades(newTrades);
+    console.log(id)
+    await API.graphql({
+      query: deleteTradeMutation,
+      variables: { input: { id } },
+    });
+    fetchTrades()
+  }
+
+  const handleNoteChange = (event) =>{
+    const tmpNotes = event.target.value;
+    setSelectedNotes(tmpNotes)
+  }
+  const handleClose = () => {
+    setShowPopup(false);
+  };
   
+  async function handleSubmit (event){
+    event.preventDefault();
+
+    const variables = {
+      id: selectedTrade.id,
+      notes: selectedNotes
+    }
+    await API.graphql({
+      query: updateTradeMutation,
+      variables: { input: variables },
+    });
+    fetchTrades();
+    // event.target.reset();
+
+  };
   return (
     <View className="App" style={{height:'100%'}}>
-      <Heading level={1}>Trading Journal</Heading>
+      <Heading level={1}>Ajeet's Trading Journal</Heading>
       <br></br>
       <Button onClick={signOut}>Sign Out</Button>
+      
+      <Dialog open={showPopup} onClose={handleClose}>
+        <DialogTitle>Add New Trade</DialogTitle>
+        <form onSubmit={handleNewTradeSubmit}>
+        <DialogContent>
+          <DialogContentText>
+            Add a new trade here to keep a record
+          </DialogContentText>
+          
+            <TextField
+              autoFocus
+              margin="dense"
+              id="ticker"
+              label="Ticker"
+              fullWidth
+              variant="standard"
+              type="text"
+              value={newTradeTicker}
+              onChange={(e) => setNewTradeTicker(e.target.value)}
+              />
+            <TextField
+              autoFocus
+              margin="dense"
+              id="type"
+              label="Trade Type (BUY/SELL)"
+              fullWidth
+              variant="standard"
+              type="text"
+              value={newTradeType}
+              onChange={(e) => setNewTradeType(e.target.value)}
+            />
+            <TextField
+              autoFocus
+              margin="dense"
+              id="enter"
+              label="Enter Time"
+              fullWidth
+              variant="standard"
+              type="text"
+              value={newTradeEnterTime}
+              onChange={(e) => setNewTradeEnterTime(e.target.value)}
+            />
+            <TextField
+              autoFocus
+              margin="dense"
+              id="exit"
+              label="Exit Time"
+              fullWidth
+              variant="standard"
+              type="text"
+              value={newTradeExitTime}
+              onChange={(e) => setNewTradeExitTime(e.target.value)}
+            />
+            <TextField
+              autoFocus
+              margin="dense"
+              id="ticker"
+              label="Ticker"
+              fullWidth
+              variant="standard"
+              type="text"
+              value={newTradePnl}
+              onChange={(e) => setNewTradePnl(e.target.value)}
+            />
+            <TextField
+              autoFocus
+              margin="dense"
+              id="notes"
+              label="Notes"
+              fullWidth
+              variant="standard"
+              type="text"
+              value={newTradeNotes}
+              onChange={(e) => setNewTradeNotes(e.target.value)}
+            />
 
+            
+          </DialogContent>
+          <DialogActions>
+            <Button type="submit">Add</Button>
+            <Button onClick={() => setShowPopup(false)}>Cancel</Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+      
       <Grid container spacing={2} style={{height:'95%'}}>
         <Grid xs={2} style={{height:'90%'}}>
           <div className="scrollable-container">
@@ -223,10 +367,10 @@ const App = ({ signOut }) => {
           </div>
         </Grid> 
         <Grid xs={10} style={{height:'90%'}}>
-          <div style={{height:'75%'}}>
-            <TradingViewWidget data={selectedTrade.ticker}/>
+          <div style={{height:'60%'}}>
+            <TradingViewWidget key={count} data={selectedTrade.ticker}/>
           </div>
-          <div style={{height:'20%'}}>
+          <div style={{height:'35%'}}>
           <Box
             sx={{
               display: 'flex',
@@ -235,7 +379,7 @@ const App = ({ signOut }) => {
               justifycontent: 'center',
               '& > :not(style)': {
                 m: 1,
-                width: '49%',
+                width: '45%',
                 height: '30%',
               },
             }}
@@ -261,7 +405,7 @@ const App = ({ signOut }) => {
             }}
           >
             <Item elevation={12}>
-            <h2>PnL: ${selectedTrade.pnl}</h2>
+            <h2>PnL: {formatPnl(selectedTrade.pnl)}</h2>
             </Item>
             <Item elevation={12}>
             <h2>Enter Time: {formatDate(selectedTrade.enterTime)}</h2>
@@ -279,14 +423,18 @@ const App = ({ signOut }) => {
               '& > :not(style)': {
                 m: 1,
                 width: '100%',
-                height: '30%',
+                height: '50%',
               },
             }}
           >
             <Item elevation={12}>
-            <textarea></textarea>
+            <form onSubmit={handleSubmit}>
+              {/* <ReactQuill value={selectedNotes} onChange={handleNoteChange}/> */}
+              <textarea value={selectedNotes} onChange={handleNoteChange} rows="7" cols="150"></textarea>
+              <Button type="submit" onClick={handleSubmit} style={{lineheight: 1}}>Submit</Button>
+            </form>
+            <Button  onClick={() => deleteTrade(selectedTrade)} style={{lineheight: 1}}>Delete Trade</Button>
             </Item>
-
 
           </Box>
           </div>
@@ -294,69 +442,6 @@ const App = ({ signOut }) => {
         </Grid> 
       </Grid>
 
-        {showPopup && (
-          <div className="popup">
-            <form onSubmit={handleNewTradeSubmit}>
-              <h3>Add New Option</h3>
-              <label>
-                Ticker Name:
-                <input
-                  type="text"
-                  placeholder="ex. AAPL, EURUSD, etc"
-                  value={newTradeTicker}
-                  onChange={(e) => setNewTradeTicker(e.target.value)}
-                />
-              </label>
-              <label>
-                Trade Type:
-                <input
-                  type="text"
-                  placeholder="BUY or SELL"
-                  value={newTradeType}
-                  onChange={(e) => setNewTradeType(e.target.value)}
-                ></input>
-              </label>
-              <label>
-                Enter Date/Time:
-                <input
-                  type="text"
-                  placeholder="MMDDYYYY-HH:MM:SS"
-                  value={newTradeEnterTime}
-                  onChange={(e) => setNewTradeEnterTime(e.target.value)}
-                ></input>
-              </label>
-              <label>
-                Exit Date/Time:
-                <input
-                  type="text"
-                  placeholder="MMDDYYYY-HH:MM:SS"
-                  value={newTradeExitTime}
-                  onChange={(e) => setNewTradeExitTime(e.target.value)}
-                ></input>
-              </label>
-              <label>
-                PnL:
-                <input
-                  type="number"
-                  placeholder="ex. 143 or -132"
-                  value={newTradePnl}
-                  onChange={(e) => setNewTradePnl(e.target.value)}
-                ></input>
-              </label>
-              <label>
-                Notes:
-                <textarea
-                  type="text"
-                  placeholder="Notes on the trade"
-                  value={newTradeNotes}
-                  onChange={(e) => setNewTradeNotes(e.target.value)}
-                ></textarea>
-              </label>
-              <button type="submit">Add</button>
-              <button onClick={() => setShowPopup(false)}>Cancel</button>
-            </form>
-          </div>
-        )}
     </View>  
     
   );
