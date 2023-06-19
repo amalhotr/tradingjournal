@@ -303,8 +303,8 @@ const App = ({ signOut }) => {
             <TextField
               autoFocus
               margin="dense"
-              id="ticker"
-              label="Ticker"
+              id="pnl"
+              label="PnL"
               fullWidth
               variant="standard"
               type="text"
